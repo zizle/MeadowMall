@@ -8,3 +8,6 @@ SMS_CODE_REDIS_EXPIRES = 3 * 60
 
 # 发送短信的记录有效期
 SEND_SMS_CODE_INTERVAL = 60
+
+# 发送短信的模板
+SMS_CODE_TEMP_ID = 1
