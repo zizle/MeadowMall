@@ -9,6 +9,7 @@ from rest_framework import status
 # 获取在配置文件中定义的logger，用来记录日志
 logger = logging.getLogger('django')
 
+
 def exception_handler(exc, context):
     """
     自定义异常处理
