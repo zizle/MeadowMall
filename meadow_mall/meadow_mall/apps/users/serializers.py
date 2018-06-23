@@ -1,6 +1,7 @@
 # _*_ coding:utf-8 _*_
 import re
 from django_redis import get_redis_connection
+from rest_framework_jwt.settings import api_settings
 
 from rest_framework import serializers
 from .models import User
@@ -75,4 +76,12 @@ class CreateUserSerializer(serializers.ModelSerializer):
         user = User.objects.create(**validated_data)
         user.set_password(validated_data['password'])
         user.save()
+
+        # 创建完用户签发JWT
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+
+        payload = jwt_payload_handler(user)
+        token = jwt_encode_handler(payload)
+        user.token = token
         return user
