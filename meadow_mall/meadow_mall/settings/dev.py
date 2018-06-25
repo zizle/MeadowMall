@@ -257,10 +257,3 @@ EMAIL_HOST_PASSWORD = 'znnbvnweuxhpbich'
 #收件人看到的发件人
 EMAIL_FROM = '美多商城<462894999@qq.com>'
 
-# Email
-# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-# EMAIL_HOST = 'smtp.163.com'
-# EMAIL_PORT = 25
-# EMAIL_HOST_USER = 'meiduo_admin@163.com'
-# EMAIL_HOST_PASSWORD = 'meiduo123'
-# EMAIL_FROM = '美多商城<meiduo_admin@163.com>'
