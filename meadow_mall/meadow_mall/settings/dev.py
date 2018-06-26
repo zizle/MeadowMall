@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'verfications.apps.VerficationsConfig',
     'users.apps.UsersConfig',
     'oauth.apps.OauthConfig',
+    'areas.apps.AreasConfig',
 ]
 
 MIDDLEWARE = [
@@ -257,3 +258,11 @@ EMAIL_HOST_PASSWORD = 'znnbvnweuxhpbich'
 #收件人看到的发件人
 EMAIL_FROM = '美多商城<462894999@qq.com>'
 
+
+# DRF扩展
+REST_FRAMEWORK_EXTENSIONS = {
+    # 缓存时间
+    'DEFAULT_CACHE_RESPONSE_TIMEOUT': 60 * 60,
+    # 缓存存储
+    'DEFAULT_USE_CACHE': 'default',
+}
