@@ -5,7 +5,7 @@ __pycache__/
 .idea
 # C extensions
 *.so
-
+meadow_mall/meadow_mall/apps/*/migrations
 # Distribution / packaging
 .Python
 build/
