@@ -18,3 +18,11 @@ class CartSerializer(serializers.Serializer):
             raise serializers.ValidationError('库存不足')
         return attrs
 
+
+class CartSKUSerializer(serializers.ModelSerializer):
+    count = serializers.IntegerField(label='数量')
+    selected = serializers.BooleanField(label='是否勾选')
+    class Meta:
+        model = SKU
+        fields = ('id', 'count', 'selected', 'name', 'default_image_url', 'price')
+
