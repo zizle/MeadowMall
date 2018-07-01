@@ -6,6 +6,8 @@ from rest_framework_jwt.settings import api_settings
 from rest_framework import serializers
 from .models import User, Address
 from celery_tasks.email.tasks import send_verify_email
+from goods.models import SKU
+from . import constants
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
@@ -146,4 +148,39 @@ class AddressTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Address
         fields = ('title',)
+
+
+class AddUserBrowsingHistorySerializer(serializers.Serializer):
+    """用户浏览历史"""
+    sku_id = serializers.IntegerField(label='商品sku编号', min_value=1)
+
+    def validated_sku_id(self, value):
+        try:
+            SKU.objects.get(id=value)
+        except SKU.DoesNotExist:
+            raise serializers.ValidationError('该商品不存在')
+        return value
+
+    def create(self, validated_data):
+        user_id = self.context['request'].user.id
+        sku_id = validated_data['sku_id']
+        redis_conn = get_redis_connection('history')
+        pl = redis_conn.pipeline()
+
+        pl.lrem('history_%s' % user_id, 0, sku_id)  # 从表头搜索，移除与sku_id相同的元素
+        pl.lpush('history_%s' % user_id, sku_id)
+        pl.ltrim('history_%s' % user_id, 0, constants.USER_BROWSING_HISTORY_COUNTS_LIMIT-1)
+
+        # redis管道执行命令
+        pl.execute()
+
+        return validated_data
+
+
+class SKUSerializer(serializers.ModelSerializer):
+    """历史记录数据返回序列化器"""
+    class Meta:
+        model = SKU
+        fields = ('id', 'name', 'price', 'default_image_url', 'comments')
+
 

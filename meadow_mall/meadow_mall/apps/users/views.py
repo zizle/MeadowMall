@@ -9,9 +9,11 @@ from rest_framework.generics import CreateAPIView, RetrieveAPIView, UpdateAPIVie
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, mixins
 from rest_framework.viewsets import GenericViewSet
+from django_redis import get_redis_connection
 
-from .serializers import CreateUserSerializer, UserDetailSerializer, EmailSerializer, UserAddressSerializer, AddressTitleSerializer
+from . import serializers
 from . import constants
+from goods.models import SKU
 
 
 # url(r'^usernames/(?P<username>\w{5,20})/count/$', views.UsernameCountView.as_view()),
@@ -51,12 +53,12 @@ class UserView(CreateAPIView):
     传入参数：
         username, password, password2, sms_code, mobile, allow
     """
-    serializer_class = CreateUserSerializer
+    serializer_class = serializers.CreateUserSerializer
 
 
 class UserDetailView(RetrieveAPIView):
     """用户中心详情"""
-    serializer_class = UserDetailSerializer
+    serializer_class = serializers.UserDetailSerializer
     # 增加访问视图的权限
     permission_classes = [IsAuthenticated]
 
@@ -67,7 +69,7 @@ class UserDetailView(RetrieveAPIView):
 class EmailView(UpdateAPIView):
     """保存邮箱"""
     permission_classes = [IsAuthenticated]
-    serializer_class = EmailSerializer
+    serializer_class = serializers.EmailSerializer
 
     def get_object(self):
         return self.request.user
@@ -94,7 +96,7 @@ class AddressViewSet(GenericViewSet, mixins.UpdateModelMixin, mixins.CreateModel
     """用户地址管理视图"""
     # 对用户地址的增删改查
     permissions = [IsAuthenticated]
-    serializer_class = UserAddressSerializer
+    serializer_class = serializers.UserAddressSerializer
 
     def get_queryset(self):
         return self.request.user.addresses.filter(is_deleted=False)
@@ -141,6 +143,28 @@ class AddressViewSet(GenericViewSet, mixins.UpdateModelMixin, mixins.CreateModel
         serializer.is_valid()
         serializer.save()
         return Response(serializer.data)
+
+
+class UserBrowsingHistoryView(CreateAPIView):
+    """用户的浏览记录"""
+    serializer_class = serializers.AddUserBrowsingHistorySerializer
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # 获取user_id
+        user_id = request.user.id
+        # redis中获取当前用户的浏览记录
+        redis_conn = get_redis_connection('history')
+        sku_list = redis_conn.lrange('history_%s' % user_id, 0, constants.USER_BROWSING_HISTORY_COUNTS_LIMIT)
+        # 查询数据库
+        skus = []
+        for sku_id in sku_list:
+            sku = SKU.objects.get(id=sku_id)
+            skus.append(sku)
+        # 返回数据
+        serializer = serializers.SKUSerializer(skus, many=True)
+        return Response(serializer.data)
+
 
 
 
