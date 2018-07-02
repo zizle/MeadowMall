@@ -52,7 +52,7 @@ class CartView(GenericAPIView):
             pl.hincrby('cart_%s' % user.id, sku_id, count)
             if selected:
                 # 是否勾选  redis  set
-                pl.sadd('cart_%s' % user.id, sku_id)
+                pl.sadd('cart_selected_%s' % user.id, sku_id)
             pl.execute()
             return Response(serializer.data)
 
@@ -106,7 +106,7 @@ class CartView(GenericAPIView):
             sku_id:{count: count, selected: selected}
             
             """
-            redis_conn = get_redis_connection('cart')
+            redis_conn = get_redis_connection('carts')
             redis_cart = redis_conn.hgetall('cart_%s' % user.id)
             redis_selected = redis_conn.smember('cart_selected_%s' % user.id)
             # 调整数据
